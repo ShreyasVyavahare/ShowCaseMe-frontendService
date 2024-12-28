@@ -33,6 +33,26 @@ export const savePortfolio = async (data: any) => {
     }
 };
 
+export const getFormData = async () => {
+    const headers = getAuthHeaders();
+    try {
+        const response = await axios.get(`${API_BASE_URL}/portfolio`, { headers });
+        return response.data; // Return the portfolio data from the API response
+    } catch (error: any) {
+        // Handle errors and throw a more specific message
+        const err = error as any;
+        if (err.response) {
+            // If the response status is available
+            throw new Error(`Error ${err.response.status}: ${err.response.data.message || err.response.statusText}`);
+        } else if (err.request) {
+            // If the request was made but no response was received
+            throw new Error("No response from server");
+        } else {
+            // Any other error (e.g., invalid request configuration)
+            throw new Error(err.message || "An unknown error occurred");
+        }
+    }
+};
 // Function to fetch a user's portfolio by their username
 export const fetchPortfolio = async (username: string) => {
     try {
@@ -51,3 +71,8 @@ export const fetchPortfolio = async (username: string) => {
         }
     }
 };
+
+export const getUserData = async()=>{
+  const response =  await axios.get(`${API_BASE_URL}/auth/user`, { headers: getAuthHeaders() });
+    return response.data;
+}
