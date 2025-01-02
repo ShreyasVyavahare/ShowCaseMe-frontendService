@@ -11,11 +11,12 @@ import {
   CardContent,
   IconButton,
   Tooltip,
-  Switch,
-  useTheme,
   ThemeProvider,
   createTheme,
-  Paper
+  Paper,
+  Fade,
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import {
   LinkedIn,
@@ -24,7 +25,9 @@ import {
   Email,
   DarkMode,
   LightMode,
-  ArrowForward
+  ArrowForward,
+  Download,
+  ArrowBack
 } from '@mui/icons-material';
 import skillsImage from "../assets/skills.jpg"
 import educationImg from "../assets/edu.jpeg"
@@ -40,9 +43,10 @@ interface Portfolio {
     linkedinURL: string;
     githubURL: string;
     instagramURL: string;
-    role: string;
-    description: string;
+    Role: string;
+ 
     profileImageURL: string;
+    resumeDriveLink: string;
   };
   skills: string[];
   experience: {
@@ -67,6 +71,7 @@ interface Portfolio {
   }[];
   languages: string[];
   softSkills: string[];
+  description: string;
 }
 
 const PortfolioPage = () => {
@@ -103,6 +108,7 @@ const PortfolioPage = () => {
   });
 
   const theme = isDarkMode ? darkTheme : lightTheme;
+  const [loading, setLoading] = useState(true);
 
   const gradients = {
     header: isDarkMode
@@ -166,6 +172,9 @@ const PortfolioPage = () => {
     );
   };
   const ExperienceTimeline: React.FC<{ experiences: Portfolio['experience']; isDarkMode: boolean }> = ({ experiences, isDarkMode }) => {
+    // Sort experiences by endDate in descending order
+    const sortedExperiences = experiences.sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime());
+  
     return (
       <Grid item xs={12} md={12}>
         <GlassmorphicCard gradient={gradients.experience}>
@@ -173,7 +182,6 @@ const PortfolioPage = () => {
             <SectionTitle>Experience</SectionTitle>
             <Box
               sx={{
-               
                 display: 'flex',
                 overflowX: 'auto',
                 pb: 2,
@@ -194,7 +202,7 @@ const PortfolioPage = () => {
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, px: 2 }}>
-                {experiences.map((exp, index) => (
+                {sortedExperiences.map((exp, index) => (
                   <React.Fragment key={index}>
                     <motion.div
                       initial={{ opacity: 0, y: 50 }}
@@ -204,18 +212,13 @@ const PortfolioPage = () => {
                       <Paper
                         elevation={3}
                         sx={{
-                       
                           p: 3,
                           minWidth: 300,
                           maxWidth: 300,
-                          background: isDarkMode ?
-                            'rgba(255, 255, 255, 0.05)' :
-                            'rgba(255, 255, 255, 0.51)',
+                          background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.51)',
                           borderRadius: 2,
                           border: '1px solid',
-                          borderColor: isDarkMode ?
-                            'rgba(255, 255, 255, 0.1)' :
-                            'rgba(0, 0, 0, 0.1)',
+                          borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                           position: 'relative',
                           '&:hover': {
                             transform: 'translateY(-5px)',
@@ -223,10 +226,7 @@ const PortfolioPage = () => {
                           },
                         }}
                       >
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          transition={{ duration: 0.2 }}
-                        >
+                        <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                           <Box sx={{ position: 'relative' }}>
                             <Typography
                               variant="h6"
@@ -242,7 +242,7 @@ const PortfolioPage = () => {
                               sx={{
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : '#666',
                                 fontWeight: 500,
-                                mb: 1
+                                mb: 1,
                               }}
                             >
                               {exp.company}
@@ -265,7 +265,7 @@ const PortfolioPage = () => {
                               variant="body2"
                               sx={{
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#555',
-                                lineHeight: 1.6
+                                lineHeight: 1.6,
                               }}
                             >
                               {exp.description}
@@ -274,7 +274,7 @@ const PortfolioPage = () => {
                         </motion.div>
                       </Paper>
                     </motion.div>
-                    {index < experiences.length - 1 && (
+                    {index < sortedExperiences.length - 1 && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -294,10 +294,10 @@ const PortfolioPage = () => {
                             transition={{
                               duration: 1.5,
                               repeat: Infinity,
-                              ease: "easeInOut",
+                              ease: 'easeInOut',
                             }}
                           >
-                            <ArrowForward
+                            <ArrowBack
                               sx={{
                                 fontSize: 30,
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
@@ -359,6 +359,96 @@ const PortfolioPage = () => {
     </motion.div>
   );
 
+
+  const LoadingSpinner = () => {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+  
+    return (
+      <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        gap: 4,
+        p: 6,
+        background: isDarkMode
+          ? 'linear-gradient(135deg, #1a1a1a 0%, #2d3436 50%, #1a1a1a 100%)'
+          : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+  
+        boxShadow: isDarkMode 
+          ? '0 8px 32px rgba(0, 0, 0, 0.4)'
+          : '0 8px 32px rgba(31, 38, 135, 0.15)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: isDarkMode
+            ? 'radial-gradient(circle at center, rgba(99, 102, 241, 0.15), transparent 70%)'
+            : 'radial-gradient(circle at center, rgba(99, 102, 241, 0.1), transparent 70%)',
+          animation: 'pulse 3s ease-in-out infinite',
+        }
+      }}
+    >
+      <Fade in={true} style={{ transitionDelay: '100ms' }}>
+        <CircularProgress
+          size={80}
+          thickness={4}
+          sx={{
+            animation: 'spin 1s linear infinite',
+            '@keyframes spin': {
+              '0%': {
+                transform: 'rotate(0deg)',
+              },
+              '100%': {
+                transform: 'rotate(360deg)',
+              }
+            },
+            '& .MuiCircularProgress-svg': {
+              color: isDarkMode ? '#6366f1' : '#4f46e5',
+              filter: `drop-shadow(0 0 8px ${isDarkMode ? 'rgba(99, 102, 241, 0.5)' : 'rgba(79, 70, 229, 0.3)'})`
+            }
+          }}
+        />
+      </Fade>
+      
+      <Fade
+        in={true}
+        style={{
+          transitionDelay: '200ms',
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+            fontWeight: 500,
+            letterSpacing: '0.05em',
+            animation: 'textPulse 2s ease-in-out infinite',
+            '@keyframes textPulse': {
+              '0%': { opacity: 0.5 },
+              '50%': { opacity: 1 },
+              '100%': { opacity: 0.5 },
+            },
+            textShadow: isDarkMode
+              ? '0 0 20px rgba(99, 102, 241, 0.3)'
+              : '0 0 20px rgba(99, 102, 241, 0.2)',
+          }}
+        >
+          Loading...
+        </Typography>
+      </Fade>
+    </Box>
+    );
+  };
+
   useEffect(() => {
     const getPortfolio = async () => {
       try {
@@ -372,17 +462,86 @@ const PortfolioPage = () => {
       } catch (error) {
         console.error("Error fetching portfolio:", error);
         setPortfolio(null);
+      } finally {
+        setLoading(false);
       }
     };
-
+  
     getPortfolio();
   }, [username]);
 
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+  <LoadingSpinner />
+</ThemeProvider>
+    );
+  }
+  
   if (!portfolio) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h5">Portfolio not found</Typography>
-      </Box>
+      <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        gap: 4,
+        p: 6,
+        background: isDarkMode
+          ? 'linear-gradient(135deg, #1a1a1a 0%, #2d3436 50%, #1a1a1a 100%)'
+          : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+     
+        boxShadow: isDarkMode 
+          ? '0 8px 32px rgba(0, 0, 0, 0.4)'
+          : '0 8px 32px rgba(31, 38, 135, 0.15)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: isDarkMode
+            ? 'radial-gradient(circle at center, rgba(99, 102, 241, 0.15), transparent 70%)'
+            : 'radial-gradient(circle at center, rgba(99, 102, 241, 0.1), transparent 70%)',
+          animation: 'pulse 3s ease-in-out infinite',
+        }
+      }}
+    >
+      
+    
+      
+      <Fade
+        in={true}
+        style={{
+          transitionDelay: '200ms',
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+            fontWeight: 500,
+            letterSpacing: '0.05em',
+            animation: 'textPulse 2s ease-in-out infinite',
+            '@keyframes textPulse': {
+              '0%': { opacity: 0.5 },
+              '50%': { opacity: 1 },
+              '100%': { opacity: 0.5 },
+            },
+            textShadow: isDarkMode
+              ? '0 0 20px rgba(99, 102, 241, 0.3)'
+              : '0 0 20px rgba(99, 102, 241, 0.2)',
+          }}
+        >
+          Portfolio not found
+        </Typography>
+      </Fade>
+    </Box>
     );
   }
 
@@ -584,7 +743,7 @@ const PortfolioPage = () => {
                             fontWeight: '500'
                           }}
                         >
-                          {portfolio.personalDetails.role}
+                          {portfolio.personalDetails.Role}
                         </Typography>
                       </motion.div>
 
@@ -602,7 +761,7 @@ const PortfolioPage = () => {
                             maxWidth: '600px'
                           }}
                         >
-                          {portfolio.personalDetails.description}
+                          {portfolio.description}
                         </Typography>
                       </motion.div>
 
@@ -623,7 +782,8 @@ const PortfolioPage = () => {
                             { icon: <Email />, url: `mailto:${portfolio.personalDetails.email}`, title: 'Email' },
                             { icon: <LinkedIn />, url: portfolio.personalDetails.linkedinURL, title: 'LinkedIn' },
                             { icon: <GitHub />, url: portfolio.personalDetails.githubURL, title: 'GitHub' },
-                            { icon: <Instagram />, url: portfolio.personalDetails.instagramURL, title: 'Instagram' }
+                            { icon: <Instagram />, url: portfolio.personalDetails.instagramURL, title: 'Instagram' },
+                            { icon: <Download />, url: portfolio.personalDetails.resumeDriveLink, title: 'Resume Link' }
                           ].map((social, index) => (
                             <motion.div
                               key={index}
@@ -635,21 +795,23 @@ const PortfolioPage = () => {
                               whileTap={{ scale: 0.9 }}
                             >
                               <Tooltip title={social.title}>
-                                <IconButton
-                                  color="inherit"
-                                  href={social.url}
-                                  sx={{
-                                    bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                                    backdropFilter: 'blur(10px)',
-                                    '&:hover': {
-                                      bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                      transform: 'translateY(-2px)',
-                                      transition: 'all 0.3s ease'
-                                    }
-                                  }}
-                                >
-                                  {social.icon}
-                                </IconButton>
+                              <IconButton
+  color="inherit"
+  href={social.url}
+  target="_blank"
+  rel="noopener noreferrer"
+  sx={{
+    bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+    backdropFilter: 'blur(10px)',
+    '&:hover': {
+      bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+      transform: 'translateY(-2px)',
+      transition: 'all 0.3s ease'
+    }
+  }}
+>
+  {social.icon}
+</IconButton>
                               </Tooltip>
                             </motion.div>
                           ))}
@@ -664,82 +826,85 @@ const PortfolioPage = () => {
 
           {/* Skills Section */}
           <Grid item xs={12} md={6}>
-            <GlassmorphicCard gradient={gradients.skills}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  height: '100%',
-                  flexDirection: { xs: 'column', md: 'row' }, // Column on mobile, row on larger screens
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Image Section - 40% */}
-                <Box
-                  sx={{
-                    width: { xs: '100%', md: '40%' }, // Full width on mobile, 40% on larger screens
-                    position: 'relative',
-                    overflow: 'hidden',
-                    minHeight: { xs: '200px', md: 'auto' }, // Minimum height for mobile view
-                  }}
-                >
-                  <img
-                    src={skillsImage}
-                    alt="Skills visualization"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      minHeight: "250px",
-                      objectFit: 'cover',
-                      objectPosition: 'center',
-                    }}
-                  />
-                  {/* Overlay to maintain glassmorphic effect consistency */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(0px)',
-                    }}
-                  />
-                </Box>
+  <GlassmorphicCard gradient={gradients.skills}>
+    <Box
+      sx={{
+        display: 'flex',
+        height: '100%',
+        flexDirection: { xs: 'column', md: 'row' }, // Column on mobile, row on larger screens
+        overflow: 'hidden',
+      }}
+    >
+      {/* Image Section - 40% */}
+      <Box
+        sx={{
+          width: { xs: '100%', md: '40%' }, // Full width on mobile, 40% on larger screens
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: { xs: '200px', md: 'auto' }, // Minimum height for mobile view
+        }}
+      >
+        <img
+          src={skillsImage}
+          alt="Skills visualization"
+          style={{
+            width: '100%',
+            height: '100%',
+            minHeight: "250px",
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+        />
+        {/* Overlay to maintain glassmorphic effect consistency */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(0px)',
+          }}
+        />
+      </Box>
 
-                {/* Content Section - 60% */}
-                <CardContent
-                  sx={{
-                    width: { xs: '100%', md: '60%' }, // Full width on mobile, 60% on larger screens
-                    overflow:'hidden',
-                    p: 3,
-                  }}
-                >
-                  <SectionTitle>Skills</SectionTitle>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 1,
-                      maxHeight: '100%',
-                      overflow: 'auto',
-                    }}
-                  >
-                    {portfolio.skills.map((skill, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <SkillChip label={skill} />
-                      </motion.div>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Box>
-            </GlassmorphicCard>
-          </Grid>
+      {/* Content Section - 60% */}
+      <CardContent
+        sx={{
+          width: { xs: '100%', md: '60%' }, // Full width on mobile, 60% on larger screens
+          overflow: 'hidden',
+          p: 3,
+        }}
+      >
+        <SectionTitle>Skills</SectionTitle>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            maxHeight: '100%',
+            overflow: 'auto',
+            '& > *': {
+              flexBasis: { xs: 'calc(25% - 8px)', md: 'auto' }, // 4 skills per line on mobile
+            },
+          }}
+        >
+          {portfolio.skills.map((skill, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <SkillChip label={skill} />
+            </motion.div>
+          ))}
+        </Box>
+      </CardContent>
+    </Box>
+  </GlassmorphicCard>
+</Grid>
 
           {/* Education Section */}
           <Grid item xs={12} md={6}>
@@ -870,73 +1035,92 @@ const PortfolioPage = () => {
 
           {/* Projects Section */}
           <Grid item xs={12}>
-            <GlassmorphicCard gradient={gradients.projects}>
-              <CardContent>
-                <SectionTitle>Projects</SectionTitle>
-                <Grid container spacing={2}>
-                  {portfolio.projects.map((project, index) => (
-                    <Grid item xs={12} md={4} key={index}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay:  0.2 }}
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <Card sx={{
-                          height: '100%',
-
-                          background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-                          color: theme.palette.text.primary
-                        }}>
-                          <Box
-                            sx={{
-                              height: 200,
-                              bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'relative', // Add relative positioning
-                              overflow: 'hidden', // Ensure the gradient overlay stays within the box
-                            }}
-                          >
-                            <img
-                              src={project.projectImage}
-                              alt="Project"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                background: 'linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.1))', // Add your gradient here
-                                zIndex: 1, // Ensure the gradient is above the image
-                              }}
-                            />
-                          </Box>
-                          <CardContent>
-                            <Typography variant="h6">{project.name}</Typography>
-                            <Typography variant="body2" sx={{ mb: 2 }}>{project.description}</Typography>
-                            <motion.div whileHover={{ scale: 1.01  }}>
-                              <IconButton
-                                size="small"
-                                href={project.link}
-                                sx={{ color: theme.palette.text.primary }}
-                              >
-                               <ArrowForward />
-                              </IconButton>
-                            </motion.div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    </Grid>
-                  ))}
-                </Grid>
-              </CardContent>
-            </GlassmorphicCard>
+  <GlassmorphicCard gradient={gradients.projects}>
+    <CardContent>
+      <SectionTitle>Projects</SectionTitle>
+      <Grid container spacing={2}>
+        {portfolio.projects.map((project, index) => (
+          <Grid item xs={12} md={4} key={index}>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <Card
+                sx={{
+                  height: '100%',
+                  background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                  color: theme.palette.text.primary,
+                }}
+              >
+                <Box
+                  sx={{
+                    height: 200,
+                    bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative', // Add relative positioning
+                    overflow: 'hidden', // Ensure the gradient overlay stays within the box
+                  }}
+                >
+                  {project.projectImage ? (
+                    <img
+                      src={project.projectImage}
+                      alt="Project"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                        zIndex: 1,
+                      }}
+                    >
+                      No image found
+                    </Typography>
+                  )}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.1))', // Add your gradient here
+                      zIndex: 1, // Ensure the gradient is above the image
+                    }}
+                  />
+                </Box>
+                <CardContent>
+                  <Typography variant="h6">{project.name}</Typography>
+                  <Tooltip title={project.description} arrow>
+                    <Typography variant="body2" sx={{ mb: 2 }}>
+                      {project.description.length > 150
+                        ? `${project.description.substring(0, 150)}...`
+                        : project.description}
+                    </Typography>
+                  </Tooltip>
+                  <motion.div whileHover={{ scale: 1.01 }}>
+                    <IconButton
+                      size="small"
+                      href={project.link}
+                      sx={{ color: theme.palette.text.primary }}
+                    >
+                      <ArrowForward />
+                    </IconButton>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </Grid>
+        ))}
+      </Grid>
+    </CardContent>
+  </GlassmorphicCard>
+</Grid>
 
 
 

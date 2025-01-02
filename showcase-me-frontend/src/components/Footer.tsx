@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
 
           <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
             <Link 
-              href="https://showcaseme.com" 
+              href="https://showkaseme.netlify.app/" 
               target="_blank" 
               rel="noopener noreferrer" 
               sx={{ 
@@ -134,7 +134,7 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
               <LinkedInIcon />
             </IconButton>
             <IconButton 
-              href="https://github.com/yourgithub"
+              href="https://github.com/ShreyasVyavahare"
               target="_blank"
               rel="noopener noreferrer"
               sx={{ 

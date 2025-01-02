@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Button, TextField, Box, Typography, IconButton,
-  Card, CardContent, Container, Grid, Paper, Divider
+  Card, CardContent, Container, Grid, Paper,
+  Theme,
+  styled,
+  Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -21,15 +24,17 @@ interface FormState {
     profileImageURL: string;
     resumeDriveLink : string;
     role: string;
+    
+   
 
 
   };
   skills: string[];
   softSkills: string[];
     languages: string[];
-  experience: { company: string; role: string; duration: string }[];
+  experience: { company: string; role: string; startDate: string ,endDate: string }[];
   projects: { name: string; description: string; link: string ,projectImage: string}[];
-  education: { institution: string; degree: string; year: string }[];
+  education: { institution: string; degree: string; startDate:string ,endDate: string }[];
   certifications: { name: string; organization: string; year: string }[];
   description: string;
 
@@ -53,9 +58,9 @@ const Dashboard = () => {
     skills: [''],
     softSkills: [''],
     languages: [''],
-    experience: [{ company: '', role: '', duration: '' }],
+    experience: [{ company: '', role: '', startDate: '' ,endDate: '' }],
     projects: [{ name: '', description: '', link: '' ,projectImage : ''}],
-    education: [{ institution: '', degree: '', year: '' }],
+    education: [{ institution: '', degree: '', startDate: '' ,endDate: '' }],
     certifications: [{ name: '', organization: '', year: '' }],
     description: ''
   });
@@ -96,6 +101,7 @@ const Dashboard = () => {
     
     if (name === 'email') validateEmail(value);
     if (name === 'phone') validatePhone(value);
+
   };
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -109,6 +115,7 @@ const Dashboard = () => {
       email: emailRegex.test(email) ? '' : 'Invalid email address'
     }));
   };
+
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -132,6 +139,7 @@ const Dashboard = () => {
         i === index ? { ...item, [key]: value } : item
       ) : prev[field]
     }));
+    
   };
 
   const addArrayField = (field: keyof FormState) => {
@@ -168,38 +176,63 @@ const Dashboard = () => {
     dispatch(setPortfolio(savedPortfolio));
     alert("Portfolio saved!");
   };
+  const StatBox = styled(Box)(({ theme }: { theme: Theme }) => ({
+    textAlign: 'center',
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.borderRadius,
+    background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    boxShadow: theme.shadows[1],
+    transition: 'transform 0.3s ease-in-out',
+    '&:hover': {
+      transform: 'translateY(-5px)',
+      boxShadow: theme.shadows[4],
+    },
+  }));
 
   const portfolioUrl = `${window.location.origin}/portfolio/${userdata?.username}`;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>Dashboard {userdata?.username}</Typography>
+      <Typography variant="h4" gutterBottom>Welcome {userdata?.username}</Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Summary Section */}
-        <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={6} md={2}>
-              <Typography variant="h6">Skills</Typography>
-              <Typography variant="h4">{form.skills.length}</Typography>
-            </Grid>
-            <Grid item xs={6} md={2}>
-              <Typography variant="h6">Experience</Typography>
-              <Typography variant="h4">{form.experience.length}</Typography>
-            </Grid>
-            <Grid item xs={6} md={2}>
-              <Typography variant="h6">Projects</Typography>
-              <Typography variant="h4">{form.projects.length}</Typography>
-            </Grid>
-            <Grid item xs={6} md={2}>
-              <Typography variant="h6">Education</Typography>
-              <Typography variant="h4">{form.education.length}</Typography>
-            </Grid>
-            <Grid item xs={6} md={2}>
-              <Typography variant="h6">Certifications</Typography>
-              <Typography variant="h4">{form.certifications.length}</Typography>
-            </Grid>
-          </Grid>
-        </Paper>
+        <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+    <Grid container spacing={3}>
+      <Grid item xs={6} md={2}>
+        <StatBox>
+          <Typography variant="h6" color="primary">Skills</Typography>
+          <Typography variant="h4" color="textPrimary">{form.skills.length}</Typography>
+        </StatBox>
+      </Grid>
+      <Grid item xs={6} md={2}>
+        <StatBox>
+          <Typography variant="h6" color="primary">Experience</Typography>
+          <Typography variant="h4" color="textPrimary">{form.experience.length}</Typography>
+        </StatBox>
+      </Grid>
+      <Grid item xs={6} md={2}>
+        <StatBox>
+          <Typography variant="h6" color="primary">Projects</Typography>
+          <Typography variant="h4" color="textPrimary">{form.projects.length}</Typography>
+        </StatBox>
+      </Grid>
+      <Grid item xs={6} md={2}>
+        <StatBox>
+          <Typography variant="h6" color="primary">Education</Typography>
+          <Typography variant="h4" color="textPrimary">{form.education.length}</Typography>
+        </StatBox>
+      </Grid>
+      <Grid item xs={6} md={2}>
+        <StatBox>
+          <Typography variant="h6" color="primary">Certifications</Typography>
+          <Typography variant="h4" color="textPrimary">{form.certifications.length}</Typography>
+        </StatBox>
+      </Grid>
+    </Grid>
+  </Paper>
+
+  <Typography variant="h4">Please fill your Details to create the Personalized Portfolio with readymade User Interface</Typography>
+  <Typography>This is Beta Version of application ,it may include some bugs wich will be resolved in upcoming days</Typography>
 
         {/* Personal Details */}
         <Card>
@@ -437,13 +470,29 @@ const Dashboard = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="Duration"
-                      value={exp.duration}
-                      onChange={(e) => handleObjectArrayFieldChange('experience', index, 'duration', e.target.value)}
-                    />
-                  </Grid>
+  <TextField
+    fullWidth
+    label="Start Date"
+    type="date"
+    value={exp.startDate}
+    onChange={(e) => handleObjectArrayFieldChange('experience', index, 'startDate', e.target.value)}
+    InputLabelProps={{
+      shrink: true,
+    }}
+  />
+</Grid>
+<Grid item xs={12} md={6}>
+  <TextField
+    fullWidth
+    label="End Date"
+    type="date"
+    value={exp.endDate}
+    onChange={(e) => handleObjectArrayFieldChange('experience', index, 'endDate', e.target.value)}
+    InputLabelProps={{
+      shrink: true,
+    }}
+  />
+</Grid>
                 </Grid>
                 <Button
                   startIcon={<RemoveIcon />}
@@ -495,7 +544,7 @@ const Dashboard = () => {
                       fullWidth
                       label="Project Image Screenshot link"
                       value={project.projectImage}
-                      onChange={(e) => handleObjectArrayFieldChange('projects', index, 'link', e.target.value)}
+                      onChange={(e) => handleObjectArrayFieldChange('projects', index, 'projectImage', e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -553,9 +602,19 @@ const Dashboard = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Year"
-                      value={edu.year}
-                      onChange={(e) => handleObjectArrayFieldChange('education', index, 'year', e.target.value)}
+                          type="date"
+                      label="Start Date"
+                      value={edu.startDate}
+                      onChange={(e) => handleObjectArrayFieldChange('education', index, 'startDate', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                        type="date"
+                      fullWidth
+                      label="End Date"
+                      value={edu.endDate}
+                      onChange={(e) => handleObjectArrayFieldChange('education', index, 'endDate', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -602,13 +661,17 @@ const Dashboard = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="Year"
-                      value={cert.year}
-                      onChange={(e) => handleObjectArrayFieldChange('certifications', index, 'year', e.target.value)}
-                    />
-                  </Grid>
+  <TextField
+    fullWidth
+    label="Year"
+    type="month"
+    value={cert.year}
+    onChange={(e) => handleObjectArrayFieldChange('certifications', index, 'year', e.target.value)}
+    InputLabelProps={{
+      shrink: true,
+    }}
+  />
+</Grid>
                 </Grid>
                 <Button
                   startIcon={<RemoveIcon />}
@@ -626,9 +689,7 @@ const Dashboard = () => {
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" color="secondary">
-            Cancel
-          </Button>
+         
           <Button variant="contained" color="primary" onClick={handleSubmit}>
             Save
           </Button>
@@ -638,9 +699,14 @@ const Dashboard = () => {
         </Box>
         {userdata && (
           <Box sx={{ mt: 4 }}>
-            <Typography variant="h6">
-              Access your portfolio at: <a href={portfolioUrl}>{portfolioUrl}</a>
-            </Typography>
+         <Typography variant="h6">
+  Access your portfolio at: 
+  <Tooltip title={portfolioUrl} arrow>
+    <a href={portfolioUrl} target="_blank" rel="noopener noreferrer">
+      {portfolioUrl.length > 30 ? `${portfolioUrl.substring(0, 30)}...` : portfolioUrl}
+    </a>
+  </Tooltip>
+</Typography>
           </Box>
         )}
       </Box>
