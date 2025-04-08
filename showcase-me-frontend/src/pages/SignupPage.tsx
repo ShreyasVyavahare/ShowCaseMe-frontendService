@@ -113,7 +113,7 @@ const SignupPage: React.FC = () => {
       setShowSuccess(true);
       // Redirect to login page after 2 seconds
       setTimeout(() => {
-        navigate("/login");
+        navigate("/");
       }, 2000);
     } catch (error) {
       console.error("Signup failed:", error);

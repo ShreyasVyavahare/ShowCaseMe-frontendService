@@ -43,7 +43,7 @@ interface Portfolio {
     linkedinURL: string;
     githubURL: string;
     instagramURL: string;
-    Role: string;
+    role: string;
  
     profileImageURL: string;
     resumeDriveLink: string;
@@ -743,7 +743,7 @@ const PortfolioPage = () => {
                             fontWeight: '500'
                           }}
                         >
-                          {portfolio.personalDetails.Role}
+                          {portfolio.personalDetails.role}
                         </Typography>
                       </motion.div>
 

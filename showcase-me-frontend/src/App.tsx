@@ -5,8 +5,8 @@ import { RootState } from "./store";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/Dashboard";
-import PortfolioPage from "./pages/PortfolioPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PortfolioWrapper from "./components/PortfolioWrapper";
 
 const App: React.FC = () => {
     const token = useSelector((state: RootState) => state.user.token);
@@ -25,7 +25,7 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/portfolio/:username" element={<PortfolioPage />} />
+                <Route path="/portfolio/:username" element={<PortfolioWrapper />} />
             </Routes>
         </Router>
     );

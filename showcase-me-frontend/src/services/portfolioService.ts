@@ -55,6 +55,68 @@ export const getFormData = async () => {
         }
     }
 };
+
+
+
+
+export const uploadProfileImage = async (file: File) => {
+    const headers = getAuthHeaders();
+    const formData = new FormData();
+    formData.append('profileImageURL', file); // Ensure the key matches backend
+
+    try {
+        const response = await axios.post(`${API_BASE_URL}/portfolio/upload`, formData, {
+            headers: {
+                ...headers,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data.personalDetails?.profileImageURL; // Return uploaded image URL
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to upload image');
+    }
+};
+
+
+export const uploadResumePdf = async (file: File) => {
+    const headers = getAuthHeaders();
+    const formData = new FormData();
+    formData.append('resume', file); // Ensure the key matches backend
+
+    try {
+        const response = await axios.post(`${API_BASE_URL}/portfolio/upload-resume`, formData, {
+            headers: {
+                ...headers,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data.personalDetails?.resumeDriveLink; // Return uploaded image URL
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to upload resume');
+    }
+};
+export const uploadProjectImage = async (file: File, projectIndex: number) => {
+    const headers = getAuthHeaders();
+    const formData = new FormData();
+    formData.append('projectImages', file);
+    formData.append('projectIndex', projectIndex.toString());
+
+    try {
+        const response = await axios.post(`${API_BASE_URL}/portfolio/upload`, formData, {
+            headers: {
+                ...headers,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data.projects[projectIndex]?.projectImage;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.error || 'Failed to upload project image');
+    }
+}
+
+
+
+
 // Function to fetch a user's portfolio by their username
 export const fetchPortfolio = async (username: string) => {
     try {
